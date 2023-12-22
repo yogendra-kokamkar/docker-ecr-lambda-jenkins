@@ -1,0 +1,60 @@
+pipeline{
+    agent any
+    environment {
+        AWS_DEFAULT_REGION = 'ap-south-1'
+        LAMBDA_FUNCTION_NAME = 'docker-helloworld'
+        LAMBDA_ROLE_ARN = 'arn:aws:iam::'Your-aws-account-id':role/service-role/'Your-aws-role''
+    }
+    stages{
+        stage("checkout"){
+            steps{
+                sh 'echo passed'
+                git branch: 'main', url: 'your-git-url'
+            }
+        }
+        stage("Build Docker Image"){
+            steps{
+                sh 'docker build -t helloworldlambda .'
+            }
+        }
+        stage("Push Docker Image"){
+            steps{
+                sh 'aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 'Your-aws-account-id'.dkr.ecr.ap-south-1.amazonaws.com'
+                sh 'docker tag helloworldlambda:latest 'Your-aws-account-id'.dkr.ecr.ap-south-1.amazonaws.com/helloworld:latest'
+                sh 'docker push 'Your-aws-account-id'.dkr.ecr.ap-south-1.amazonaws.com/helloworld:latest'
+            }
+        }
+        stage('Check Lambda Existence') {
+            steps {
+                script {
+                    def lambdaExists = sh(script: "aws lambda get-function --function-name $LAMBDA_FUNCTION_NAME", returnStatus: true) == 0
+
+                    if (lambdaExists) {
+                        echo "Lambda function already exists. Updating code..."
+                    } else {
+                        echo "Lambda function does not exist. Creating new Lambda..."
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Lambda') {
+            steps {
+                script {
+                    def lambdaExists = sh(script: "aws lambda get-function --function-name $LAMBDA_FUNCTION_NAME", returnStatus: true) == 0
+                    if (lambdaExists) {
+                        sh "aws lambda update-function-code   --function-name $LAMBDA_FUNCTION_NAME   --image-uri 'Your-aws-account-id'.dkr.ecr.ap-south-1.amazonaws.com/helloworld:latest"
+                    } else {
+                        sh "aws lambda create-function   --function-name $LAMBDA_FUNCTION_NAME   --package-type Image   --code ImageUri='Your-aws-account-id'.dkr.ecr.ap-south-1.amazonaws.com/helloworld:latest   --role $LAMBDA_ROLE_ARN"
+                    }
+                }
+            }
+        }
+        stage('Cleanup') {
+            steps {
+                sh "docker rmi 'Your-aws-account-id'.dkr.ecr.ap-south-1.amazonaws.com/helloworld"
+                sh "docker rmi helloworldlambda"
+            }
+        }
+    }
+}
