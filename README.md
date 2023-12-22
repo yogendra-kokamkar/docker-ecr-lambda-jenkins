@@ -2,6 +2,9 @@
 
 This repository contains a simple "Hello World" program written in Python for AWS Lambda. Additionally, it includes a Dockerfile to containerize the pythom program, and the deployment process is automated through a Jenkins CI/CD pipeline. The Docker image is pushed to AWS ECR (Elastic Container Registry), and an AWS Lambda function is created using the ECR image.
 
+![diagram](https://github.com/yogendra-kokamkar/docker-ecr-lambda-jenkins/assets/55878086/db7bd831-5643-41d2-a728-770fc55c9aec)
+
+
 ## Prerequisites
 
 Before you proceed, make sure you have the following installed:
