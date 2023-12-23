@@ -28,8 +28,8 @@ Ensure that your AWS CLI is configured with the necessary credentials and permis
 1. **Clone this repository:**
 
    ```bash
-   git clone https://github.com/yogendra-kokamkar/docker-ecr-lambda.git
-   cd docker-ecr-lambda
+   git clone https://github.com/yogendra-kokamkar/docker-ecr-lambda-jenkins.git
+   cd docker-ecr-lambda-jenkins
 
 2. **Customize the Lambda function code:**
 
